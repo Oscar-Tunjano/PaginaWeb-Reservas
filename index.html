@@ -58,6 +58,18 @@
                <li class="nav-item cta">
                 <a class="nav-link" href="booknow.html"><span>Reservar</span></a>
               </li>
+
+	      <li class="nav-item">
+                <a class="nav-link" href="login.html">Iniciar Sesión</a>
+              </li>
+
+ 		<li class="nav-item cta">
+                <a class="nav-link" href="register.html">Registrarme👤</a>
+              </li>
+
+		<li><a id="menu-perfil" href="perfil.html" style="display:none;">Perfil</a></li>
+		<li><a id="menu-logout" href="#" style="display:none;" onclick="cerrarSesion()">Salir</a></li>
+
             </ul>
             
           </div>
@@ -290,3 +302,35 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     <script src="js/main.js"></script>
   </body>
 </html>
+<script>
+const u = localStorage.getItem("user");
+
+if(u){
+  document.getElementById("menu-perfil").style.display="block";
+  document.getElementById("menu-logout").style.display="block";
+  document.getElementById("menu-login").style.display="none";
+  document.getElementById("menu-register").style.display="none";
+}
+
+function cerrarSesion(){
+  localStorage.removeItem("user");
+  location.reload();
+}
+</script>
+
+<script>
+const u = localStorage.getItem("user");
+
+if(u){
+  document.getElementById("menu-perfil").style.display="block";
+  document.getElementById("menu-logout").style.display="block";
+  document.getElementById("menu-login").style.display="none";
+  document.getElementById("menu-register").style.display="none";
+}
+
+function cerrarSesion(){
+  localStorage.removeItem("user");
+  location.reload();
+}
+</script>
+
