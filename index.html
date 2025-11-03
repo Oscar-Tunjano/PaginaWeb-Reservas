@@ -302,35 +302,3 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     <script src="js/main.js"></script>
   </body>
 </html>
-<script>
-const u = localStorage.getItem("user");
-
-if(u){
-  document.getElementById("menu-perfil").style.display="block";
-  document.getElementById("menu-logout").style.display="block";
-  document.getElementById("menu-login").style.display="none";
-  document.getElementById("menu-register").style.display="none";
-}
-
-function cerrarSesion(){
-  localStorage.removeItem("user");
-  location.reload();
-}
-</script>
-
-<script>
-const u = localStorage.getItem("user");
-
-if(u){
-  document.getElementById("menu-perfil").style.display="block";
-  document.getElementById("menu-logout").style.display="block";
-  document.getElementById("menu-login").style.display="none";
-  document.getElementById("menu-register").style.display="none";
-}
-
-function cerrarSesion(){
-  localStorage.removeItem("user");
-  location.reload();
-}
-</script>
-
