@@ -1,70 +1,44 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #f3f3f3;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .box {
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      width: 320px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-    }
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 12px;
-      background: #0b6797;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-  </style>
+<meta charset="utf-8">
+<title>Login</title>
 </head>
 <body>
+<h2>Iniciar sesión</h2>
 
-<div class="box">
-  <h2>Iniciar Sesión</h2>
-  
-  <input id="email" placeholder="Correo">
-  <input id="password" type="password" placeholder="Contraseña">
+<form id='loginForm'>
+<input id='email' placeholder='Correo' required><br>
+<input id='password' type='password' placeholder='Contraseña' required><br>
+<button>Ingresar</button>
+</form>
 
-  <button onclick="login()">Entrar</button>
-</div>
+<p>Credenciales de prueba: <strong>admin@site.com / 123</strong> | <strong>cliente@site.com / 123</strong></p>
 
 <script>
-async function login(){
-  const email = email.value;
-  const password = password.value;
+const users=[
+  {email:"admin@site.com",password:"123",role:"admin"},
+  {email:"cliente@site.com",password:"123",role:"cliente"}
+];
 
-  const res = await fetch("/api/login", {
-    method: "POST",
-    body: JSON.stringify({email, password})
-  });
+document.getElementById('loginForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  let email=document.getElementById('email').value.trim();
+  let pass=document.getElementById('password').value;
 
-  if(res.status === 200){
-    const user = await res.json();
-    localStorage.setItem("user", JSON.stringify(user));
-    location.href = "index.html";
-  } else {
-    alert("Datos incorrectos");
+  let u=users.find(x=>x.email===email&&x.password===pass);
+
+  if(!u){
+    alert('Credenciales inválidas');
+    return;
   }
-}
+
+  localStorage.setItem('userRole',u.role);
+  localStorage.setItem('userEmail',u.email); // persist email to link reservations
+
+  if(u.role==='admin') location='dashboard-admin.html';
+  else location='dashboard-cliente.html';
+});
 </script>
 
 </body>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Admin - Panel</title>
+<style>table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:8px;text-align:left}button{margin-right:6px}</style>
+</head><body>
+<header>
+<h2>Panel Administrador</h2>
+<div id="roleImage"></div>
+<nav>
+ <a href="index.html">Inicio</a> |
+ <a href="#">Gestionar Alojamientos</a> |
+ <a href="dashboard-admin.html">Reservas</a> |
+ <a href="#">Usuarios</a> |
+ <button onclick="logout()">Cerrar sesión</button>
+</nav>
+</header>
+
+<section>
+<h3>Reservas (Administrador: puede ver y modificar todas)</h3>
+<table id="reservasTable"><thead><tr><th>ID</th><th>Propiedad</th><th>Usuario</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table>
+</section>
+
+<script>
+// sample reservations (in a real app this comes from backend)
+if(!localStorage.getItem('reservas')){
+  const demo=[
+    {id:1,prop:'Casa Blanca',user:'cliente@site.com',date:'2025-11-10',status:'Confirmada'},
+    {id:2,prop:'Apto Vista Mar',user:'otro@site.com',date:'2025-11-12',status:'Pendiente'},
+    {id:3,prop:'Studio Centro',user:'cliente@site.com',date:'2025-12-01',status:'Cancelada'}
+  ];
+  localStorage.setItem('reservas', JSON.stringify(demo));
+}
+
+function render(){
+  const reservas=JSON.parse(localStorage.getItem('reservas')||'[]');
+  const tbody=document.querySelector('#reservasTable tbody');
+  tbody.innerHTML='';
+  reservas.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.id}</td><td>${r.prop}</td><td>${r.user}</td><td>${r.date}</td><td id="status-${r.id}">${r.status}</td>
+    <td>
+      <button onclick="editStatus(${r.id})">Editar estado</button>
+      <button onclick="deleteRes(${r.id})">Eliminar</button>
+    </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function editStatus(id){
+  const nuevo=prompt('Nuevo estado (Confirmada / Pendiente / Cancelada):');
+  if(!nuevo) return;
+  const reservas=JSON.parse(localStorage.getItem('reservas')||'[]');
+  const idx=reservas.findIndex(r=>r.id===id);
+  if(idx===-1) return alert('Reserva no encontrada');
+  reservas[idx].status=nuevo;
+  localStorage.setItem('reservas', JSON.stringify(reservas));
+  render();
+}
+
+function deleteRes(id){
+  if(!confirm('Eliminar reserva #'+id+'?')) return;
+  let reservas=JSON.parse(localStorage.getItem('reservas')||'[]');
+  reservas=reservas.filter(r=>r.id!==id);
+  localStorage.setItem('reservas', JSON.stringify(reservas));
+  render();
+}
+
+function logout(){ localStorage.removeItem('userRole'); location='index.html'; }
+
+// role image (inline SVG) for visual clarity
+document.getElementById('roleImage').innerHTML = '<svg width="100" height="60" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="60" fill="#2c7"/><text x="50" y="35" font-size="14" text-anchor="middle" fill="#002">ADMIN</text></svg>';
+
+// access guard
+if(localStorage.getItem('userRole')!=='admin') location='unauthorized.html';
+
+render();
+
+</script>
+</body></html>

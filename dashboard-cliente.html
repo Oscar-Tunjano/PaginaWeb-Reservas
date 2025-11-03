@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Cliente - Panel</title>
+<style>table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:8px;text-align:left}button{margin-right:6px}</style>
+</head><body>
+<header>
+<h2>Panel Cliente</h2>
+<div id="roleImage"></div>
+<nav>
+ <a href="index.html">Inicio</a> |
+ <a href="#">Explorar Alojamientos</a> |
+ <a href="dashboard-cliente.html">Mis Reservas</a> |
+ <button onclick="logout()">Cerrar sesión</button>
+</nav>
+</header>
+
+<section>
+<h3>Mis Reservas (sólo reservas vinculadas al usuario logueado)</h3>
+<table id="reservasTable"><thead><tr><th>ID</th><th>Propiedad</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table>
+</section>
+
+<script>
+if(!localStorage.getItem('reservas')){
+  // ensure sample data exists (admin created earlier)
+  const demo=[
+    {id:1,prop:'Casa Blanca',user:'cliente@site.com',date:'2025-11-10',status:'Confirmada'},
+    {id:2,prop:'Apto Vista Mar',user:'otro@site.com',date:'2025-11-12',status:'Pendiente'},
+    {id:3,prop:'Studio Centro',user:'cliente@site.com',date:'2025-12-01',status:'Cancelada'}
+  ];
+  localStorage.setItem('reservas', JSON.stringify(demo));
+}
+
+function getCurrentUserEmail(){
+  // in this static implementation email is inferred by known accounts in login flow
+  // store the last logged-in email for better ownership behavior
+  return localStorage.getItem('userEmail') || 'cliente@site.com';
+}
+
+function render(){
+  const reservas=JSON.parse(localStorage.getItem('reservas')||'[]');
+  const user=getCurrentUserEmail();
+  const mine=reservas.filter(r=>r.user===user);
+  const tbody=document.querySelector('#reservasTable tbody');
+  tbody.innerHTML='';
+  mine.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.id}</td><td>${r.prop}</td><td>${r.date}</td><td id="status-${r.id}">${r.status}</td>
+    <td>
+      <button onclick="requestCancel(${r.id})">Solicitar Cancelación</button>
+    </td>`;
+    tbody.appendChild(tr);
+  });
+  if(mine.length===0) tbody.innerHTML='<tr><td colspan="5">No tienes reservas.</td></tr>';
+}
+
+function requestCancel(id){
+  if(!confirm('Confirmar solicitud de cancelación para reserva #'+id+'?')) return;
+  const reservas=JSON.parse(localStorage.getItem('reservas')||'[]');
+  const idx=reservas.findIndex(r=>r.id===id);
+  if(idx===-1) return alert('Reserva no encontrada');
+  reservas[idx].status='Cancelación solicitada';
+  localStorage.setItem('reservas', JSON.stringify(reservas));
+  render();
+}
+
+function logout(){ localStorage.removeItem('userRole'); location='index.html'; }
+
+// role image (inline SVG)
+document.getElementById('roleImage').innerHTML = '<svg width="100" height="60" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="60" fill="#29f"/><text x="50" y="35" font-size="12" text-anchor="middle" fill="#fff">CLIENTE</text></svg>';
+
+// guard
+if(localStorage.getItem('userRole')!=='cliente') location='unauthorized.html';
+
+render();
+</script>
+</body></html>
