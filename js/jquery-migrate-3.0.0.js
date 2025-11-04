@@ -37,7 +37,7 @@ jQuery.migrateVersion = "3.0.0";
 
 } )();
 
-var warnedAbout = {};
+var warnedAbout= {};
 
 // List of warnings already given; public read only
 jQuery.migrateWarnings = [];
@@ -49,7 +49,7 @@ if ( jQuery.migrateTrace === undefined ) {
 
 // Forget any warnings we've already given; public
 jQuery.migrateReset = function() {
-	warnedAbout = {};
+	warnedAbout= {};
 	jQuery.migrateWarnings.length = 0;
 };
 
