@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Panel Administrador</title>
+
+<style>
+  table { border-collapse: collapse; width: 100% }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left }
+  button { margin-right: 6px }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Panel Administrador</h2>
+
+  <div id="roleImage"></div>
+
+  <nav>
+      <a href="index.html">Inicio</a> |
+      <a href="#">Alojamientos</a> |
+      <a href="dashboard-admin.html">Reservas</a> |
+      <a href="#">Usuarios</a> |
+      <button onclick="logout()">Cerrar sesión</button>
+  </nav>
+</header>
+
+<section>
+  <h3>Reservas (Administrador: Ver, cambiar estado, eliminar)</h3>
+
+  <table id="reservasTable">
+      <thead>
+          <tr>
+              <th>ID</th>
+              <th>Propiedad</th>
+              <th>Usuario</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+          </tr>
+      </thead>
+      <tbody></tbody>
+  </table>
+</section>
+
+<script>
+// ==========================================
+//   BACKEND REAL EN RENDER
+// ==========================================
+const API = "https://reservas-backend-sm.onrender.com";
+
+// ==========================================
+//   PROTEGER ACCESO SOLO PARA ADMIN
+// ==========================================
+if (localStorage.getItem("userRole") !== "admin") {
+    alert("Acceso solo para administradores");
+    window.location.href = "unauthorized.html";
+}
+
+// ==========================================
+//   CARGAR TODAS LAS RESERVAS REALES
+// ==========================================
+async function cargarReservas() {
+    try {
+        const res = await fetch(`${API}/api/admin/reservations`, {
+            credentials: "include"
+        });
+
+        const reservas = await res.json();
+
+        const tbody = document.querySelector("#reservasTable tbody");
+        tbody.innerHTML = "";
+
+        if (!Array.isArray(reservas) || reservas.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7">No hay reservas registradas.</td></tr>`;
+            return;
+        }
+
+        reservas.forEach(r => {
+            const tr = documen
+

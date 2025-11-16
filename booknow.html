@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Reservar alojamiento</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css">
+</head>
+<body>
+
+<div class="container my-5">
+  <h1>Reservar alojamiento</h1>
+
+  <form id="reservaForm">
+    <div class="mb-3">
+      <label for="propiedad_id" class="form-label">Elegir propiedad</label>
+      <select id="propiedad_id" class="form-control" required>
+        <option value="">Cargando propiedades...</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="arrival_date" class="form-label">Fecha llegada</label>
+        <input type="text" id="arrival_date" class="form-control" placeholder="YYYY-MM-DD" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="departure_date" class="form-label">Fecha salida</label>
+        <input type="text" id="departure_date" class="form-control" placeholder="YYYY-MM-DD" required>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="message" class="form-label">Notas (opcional)</label>
+      <textarea id="message" class="form-control" rows="3"></textarea>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Reservar ahora</button>
+  </form>
+</div>
+
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
+
+<script>
+// ============================================
+//   API REAL DEL BACKEND
+// ============================================
+const API_URL = "https://reservas-backend-sm.onrender.com";
+
+// ============================================
+//   CARGAR LISTA DE PROPIEDADES
+// ============================================
+async function cargarPropiedades() {
+  try {
+    const res = await fetch(API_URL + "/api/propiedades");
+    const props = await res.json();
+
+    const sel = document.getElementById("propiedad_id");
+    sel.innerHTML = "<option value=''>Selecciona una propiedad</option>";
+
+    props.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = `${p.titulo} — ${p.ciudad} — $${p.precio}`;
+      sel.appendChild(opt);
+    });
+
+  } catch (err) {
+    console.error(err);
+    alert("No se pudieron cargar las propiedades.");
+  }
+}
+
+// ============================================
+//   CALENDARIOS (FORMATO ISO)
+— ===========================================
+$('#arrival_date, #departure_date').datepicker({
+  format: 'yyyy-mm-dd',
+  autoclose: true
+});
+
+// ============================================
+//   CREAR RESERVA REAL
+// ============================================
+document.getElementById("reservaForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  // verificar sesión
+  const user = localStorage.getItem("userEmail");
+  if (!user) {
+    alert("Debes iniciar sesión para reservar.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  const propiedad_id = document.getElementById("propiedad_id").value;
+  const fecha_inicio = document.getElementById("arrival_date").value;
+  const fecha_fin = document.getElementById("departure_date").value;
+
+  if (!propiedad_id) {
+    alert("Selecciona una propiedad.");
+    return;
+  }
+
+  try {
+    const payload = { propiedad_id: Number(propiedad_id), fecha_inicio, fecha_fin };
+
+    const res = await fetch(API_URL + "/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Error al crear reserva.");
+      return;
+    }
+
+    alert("Reserva creada correctamente.");
+    window.location.href = "dashboard-cliente.html";
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al conectar con el servidor.");
+  }
+});
+
+// iniciar
+cargarPropiedades();
+</script>
+
+</body>
+</html>
+

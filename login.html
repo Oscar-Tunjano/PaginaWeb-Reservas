@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Login</title>
+</head>
+<body>
+<h2>Iniciar sesión</h2>
+
+<form id="loginForm">
+  <input id="email" type="email" placeholder="Correo" required><br>
+  <input id="password" type="password" placeholder="Contraseña" required><br>
+  <button type="submit">Ingresar</button>
+</form>
+
+<p>*Si no tienes cuenta, regístrate primero.</p>
+
+<script>
+// =======================================
+//   API REAL DEL BACKEND
+// =======================================
+const API_URL = "https://reservas-backend-sm.onrender.com";
+
+
+// =======================================
+//   EVENTO LOGIN
+// =======================================
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const correo = document.getElementById("email").value.trim().toLowerCase();
+    const contraseña = document.getElementById("password").value;
+
+    if (!correo || !contraseña) {
+        alert("Completa todos los campos");
+        return;
+    }
+
+    try {
+        const res = await fetch(API_URL + "/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",   // NECESARIO PARA SESIONES
+            body: JSON.stringify({ correo, contraseña })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.error || "Error al iniciar sesión");
+            return;
+        }
+
+        // Guardar datos localmente
+        localStorage.setItem("userEmail", data.user.correo);
+        localStorage.setItem("userRole", data.user.role);
+
+        // Redirección según rol
+        if (data.user.role === "admin") {
+            window.location.href = "dashboard-admin.html";
+        } else {
+            window.location.href = "dashboard-cliente.html";
+        }
+
+    } catch (err) {
+        console.error("LOGIN ERROR:", err);
+        alert("Error comunicándose con el servidor.");
+    }
+});
+</script>
+
+</body>
+</html>
+
