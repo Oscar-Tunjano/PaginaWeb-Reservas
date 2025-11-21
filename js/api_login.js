@@ -1,5 +1,5 @@
 // =========================
-//  LOGIN CON BACKEND NODE
+//  LOGIN CON BACKEND RENDER
 // =========================
 
 async function loginUsuario(event) {
@@ -8,21 +8,18 @@ async function loginUsuario(event) {
     const correo = document.getElementById("correo").value;
     const contrasena = document.getElementById("contrasena").value;
 
-    // URL DE TU API EN RENDER ⚠️ IMPORTANTE
-    const API_URL = "https://reservasbackend-h5qw.onrender.com/api/auth/login";
+    const API_URL = "https://reservas-backend-sm.onrender.com/api/auth/login";
 
     const data = {
-        email: correo,
-        password: contrasena
+        correo: correo,
+        contraseña: contrasena
     };
 
     try {
         const response = await fetch(API_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            credentials: "include",  // para guardar la sesión
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify(data)
         });
 

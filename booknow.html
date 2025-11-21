@@ -1,9 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <title>Reservar alojamiento</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <link rel="stylesheet" href="css/bootstrap.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css">
 </head>
@@ -14,7 +15,7 @@
 
   <form id="reservaForm">
     <div class="mb-3">
-      <label for="propiedad_id" class="form-label">Elegir propiedad</label>
+      <label for="propiedad_id" class="form-label">Seleccionar Propiedad</label>
       <select id="propiedad_id" class="form-control" required>
         <option value="">Cargando propiedades...</option>
       </select>
@@ -22,11 +23,11 @@
 
     <div class="row">
       <div class="col-md-6 mb-3">
-        <label for="arrival_date" class="form-label">Fecha llegada</label>
+        <label for="arrival_date" class="form-label">Fecha de llegada</label>
         <input type="text" id="arrival_date" class="form-control" placeholder="YYYY-MM-DD" required>
       </div>
       <div class="col-md-6 mb-3">
-        <label for="departure_date" class="form-label">Fecha salida</label>
+        <label for="departure_date" class="form-label">Fecha de salida</label>
         <input type="text" id="departure_date" class="form-control" placeholder="YYYY-MM-DD" required>
       </div>
     </div>
@@ -40,17 +41,19 @@
   </form>
 </div>
 
+
 <script src="js/jquery-3.2.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
 
 <script>
 // ============================================
-//   API REAL DEL BACKEND
+//   URL REAL DEL BACKEND (Render)
 // ============================================
 const API_URL = "https://reservas-backend-sm.onrender.com";
 
+
 // ============================================
-//   CARGAR LISTA DE PROPIEDADES
+//   Cargar Propiedades
 // ============================================
 async function cargarPropiedades() {
   try {
@@ -61,33 +64,34 @@ async function cargarPropiedades() {
     sel.innerHTML = "<option value=''>Selecciona una propiedad</option>";
 
     props.forEach(p => {
-      const opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = `${p.titulo} — ${p.ciudad} — $${p.precio}`;
-      sel.appendChild(opt);
+      const option = document.createElement("option");
+      option.value = p.id;
+      option.textContent = `${p.titulo} — ${p.ciudad} — $${p.precio}`;
+      sel.appendChild(option);
     });
 
   } catch (err) {
     console.error(err);
-    alert("No se pudieron cargar las propiedades.");
+    alert("Error cargando propiedades.");
   }
 }
 
+
 // ============================================
-//   CALENDARIOS (FORMATO ISO)
-— ===========================================
+//   Calendarios
+// ============================================
 $('#arrival_date, #departure_date').datepicker({
   format: 'yyyy-mm-dd',
   autoclose: true
 });
 
+
 // ============================================
-//   CREAR RESERVA REAL
+//   Crear Reserva Real
 // ============================================
 document.getElementById("reservaForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // verificar sesión
   const user = localStorage.getItem("userEmail");
   if (!user) {
     alert("Debes iniciar sesión para reservar.");
@@ -105,7 +109,11 @@ document.getElementById("reservaForm").addEventListener("submit", async (e) => {
   }
 
   try {
-    const payload = { propiedad_id: Number(propiedad_id), fecha_inicio, fecha_fin };
+    const payload = {
+      propiedad_id: Number(propiedad_id),
+      fecha_inicio,
+      fecha_fin
+    };
 
     const res = await fetch(API_URL + "/api/reservations", {
       method: "POST",
@@ -130,10 +138,12 @@ document.getElementById("reservaForm").addEventListener("submit", async (e) => {
   }
 });
 
-// iniciar
+
+// Iniciar
 cargarPropiedades();
 </script>
 
 </body>
 </html>
+
 

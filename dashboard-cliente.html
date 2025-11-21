@@ -1,18 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <title>Cliente - Panel</title>
+
 <style>
   table { border-collapse: collapse; width: 100% }
   th, td { border: 1px solid #ccc; padding: 8px; text-align: left }
   button { margin-right: 6px }
 </style>
 </head>
+
 <body>
 
 <header>
-  <h2>Panel Cliente</h2>
+  <h2>Panel del Cliente</h2>
   <div id="roleImage"></div>
 
   <nav>
@@ -25,6 +27,7 @@
 
 <section>
   <h3>Mis Reservas (datos reales del servidor)</h3>
+
   <table id="reservasTable">
       <thead>
           <tr>
@@ -46,22 +49,23 @@
 // ==========================================
 const API = "https://reservas-backend-sm.onrender.com";
 
+
 // ==========================================
-//   VERIFICAR SESIÓN
+//   VERIFICAR SESIÓN DEL CLIENTE
 // ==========================================
 if (!localStorage.getItem("userEmail")) {
   alert("Debes iniciar sesión.");
   window.location.href = "login.html";
 }
 
-// Bloquea ingreso de admin aquí
 if (localStorage.getItem("userRole") !== "cliente") {
-  alert("Acceso sólo para clientes.");
+  alert("Acceso no permitido.");
   window.location.href = "unauthorized.html";
 }
 
+
 // ==========================================
-//   CARGAR RESERVAS REALES
+//   CARGAR RESERVAS DEL SERVIDOR
 // ==========================================
 async function cargarReservas() {
     const email = localStorage.getItem("userEmail");
@@ -72,7 +76,6 @@ async function cargarReservas() {
         });
 
         const reservas = await response.json();
-
         const tbody = document.querySelector("#reservasTable tbody");
         tbody.innerHTML = "";
 
@@ -91,23 +94,24 @@ async function cargarReservas() {
                 <td>${r.propiedad}</td>
                 <td>${r.estado}</td>
                 <td>
-                    <button onclick="cancelar(${r.id})">Cancelar</button>
+                    <button onclick="cancelarReserva(${r.id})">Cancelar</button>
                 </td>
             `;
 
             tbody.appendChild(tr);
         });
 
-    } catch (err) {
-        console.error(err);
-        alert("Error cargando reservas.");
+    } catch (error) {
+        console.error("Error cargando reservas:", error);
+        alert("No se pudieron cargar las reservas.");
     }
 }
+
 
 // ==========================================
 //   CANCELAR RESERVA
 // ==========================================
-async function cancelar(id) {
+async function cancelarReserva(id) {
     if (!confirm(`¿Seguro que deseas cancelar la reserva #${id}?`)) return;
 
     try {
@@ -117,32 +121,34 @@ async function cancelar(id) {
         });
 
         if (!response.ok) {
-            alert("Error cancelando la reserva.");
+            alert("Error al cancelar la reserva.");
             return;
         }
 
-        alert("Reserva cancelada.");
+        alert("Reserva cancelada correctamente.");
         cargarReservas();
 
     } catch (err) {
-        alert("Error al conectar con el servidor.");
         console.error(err);
+        alert("Error al conectar con el servidor.");
     }
 }
+
 
 // ==========================================
 //   CERRAR SESIÓN
 // ==========================================
 function logout() {
-    fetch(`${API}/api/auth/logout`, {
+    fetch(`${API}/api/auth/logout`, { 
         method: "POST",
         credentials: "include"
-    }).then(() => {
+    }).finally(() => {
         localStorage.removeItem("userEmail");
         localStorage.removeItem("userRole");
         window.location.href = "index.html";
     });
 }
+
 
 // ==========================================
 //   IMAGEN DEL ROL
@@ -153,6 +159,7 @@ document.getElementById("roleImage").innerHTML = `
       <text x="50" y="35" font-size="12" text-anchor="middle" fill="#fff">CLIENTE</text>
   </svg>
 `;
+
 
 // ==========================================
 //   INICIO

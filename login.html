@@ -1,29 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta charset="utf-8">
-<title>Login</title>
+    <meta charset="utf-8">
+    <title>Iniciar Sesión</title>
 </head>
 <body>
+
 <h2>Iniciar sesión</h2>
 
 <form id="loginForm">
-  <input id="email" type="email" placeholder="Correo" required><br>
-  <input id="password" type="password" placeholder="Contraseña" required><br>
-  <button type="submit">Ingresar</button>
+    <input id="email" type="email" placeholder="Correo electrónico" required><br>
+    <input id="password" type="password" placeholder="Contraseña" required><br>
+    <button type="submit">Ingresar</button>
 </form>
 
-<p>*Si no tienes cuenta, regístrate primero.</p>
+<p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
 
 <script>
 // =======================================
-//   API REAL DEL BACKEND
+//   API REAL DEL BACKEND (Render)
 // =======================================
 const API_URL = "https://reservas-backend-sm.onrender.com";
 
 
 // =======================================
-//   EVENTO LOGIN
+//   LOGIN
 // =======================================
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -32,26 +33,26 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const contraseña = document.getElementById("password").value;
 
     if (!correo || !contraseña) {
-        alert("Completa todos los campos");
+        alert("Por favor ingresa tu correo y contraseña.");
         return;
     }
 
     try {
-        const res = await fetch(API_URL + "/api/auth/login", {
+        const response = await fetch(API_URL + "/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",   // NECESARIO PARA SESIONES
             body: JSON.stringify({ correo, contraseña })
         });
 
-        const data = await res.json();
+        const data = await response.json();
 
-        if (!res.ok) {
-            alert(data.error || "Error al iniciar sesión");
+        if (!response.ok) {
+            alert(data.error || "Credenciales incorrectas");
             return;
         }
 
-        // Guardar datos localmente
+        // Guardar datos para el dashboard
         localStorage.setItem("userEmail", data.user.correo);
         localStorage.setItem("userRole", data.user.role);
 
@@ -62,13 +63,14 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
             window.location.href = "dashboard-cliente.html";
         }
 
-    } catch (err) {
-        console.error("LOGIN ERROR:", err);
-        alert("Error comunicándose con el servidor.");
+    } catch (error) {
+        console.error("Error en login:", error);
+        alert("Error al conectar con el servidor");
     }
 });
 </script>
 
 </body>
 </html>
+
 
