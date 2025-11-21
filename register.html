@@ -56,11 +56,10 @@
 // ======================================
 //  API DEL BACKEND EN RENDER
 // ======================================
+
 const API_URL = "https://reservas-backend-sm.onrender.com/api/auth/register";
 
-// ======================================
-//  REGISTRAR USUARIO
-// ======================================
+
 async function registrarUsuario(event) {
     event.preventDefault();
 
@@ -77,7 +76,11 @@ async function registrarUsuario(event) {
         const response = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre, correo, contraseña })
+            body: JSON.stringify({
+                nombre: nombre,
+                correo: correo,
+                contrasena: contraseña   // <-- AQUÍ EL CAMBIO
+            })
         });
 
         const data = await response.json();
@@ -97,5 +100,3 @@ async function registrarUsuario(event) {
 }
 </script>
 
-</body>
-</html>
