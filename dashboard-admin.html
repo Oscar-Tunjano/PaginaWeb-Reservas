@@ -61,7 +61,7 @@ if (localStorage.getItem("userRole") !== "admin") {
 }
 
 // ==========================================
-//   CARGAR TODAS LAS RESERVAS REALES
+//   CARGAR TODAS LAS RESERVAS
 // ==========================================
 async function cargarReservas() {
     try {
@@ -70,7 +70,6 @@ async function cargarReservas() {
         });
 
         const reservas = await res.json();
-
         const tbody = document.querySelector("#reservasTable tbody");
         tbody.innerHTML = "";
 
@@ -80,5 +79,114 @@ async function cargarReservas() {
         }
 
         reservas.forEach(r => {
-            const tr = documen
+            const tr = document.createElement("tr");
 
+            tr.innerHTML = `
+                <td>${r.id}</td>
+                <td>${r.propiedad}</td>
+                <td>${r.usuario}</td>
+                <td>${r.fecha_inicio}</td>
+                <td>${r.fecha_fin}</td>
+                <td>${r.estado}</td>
+                <td>
+                    <button onclick="cambiarEstado(${r.id}, 'aprobada')">Aprobar</button>
+                    <button onclick="cambiarEstado(${r.id}, 'rechazada')">Rechazar</button>
+                    <button onclick="eliminarReserva(${r.id})">Eliminar</button>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+    } catch (err) {
+        console.error("Error cargando reservas:", err);
+        alert("No se pudieron cargar las reservas.");
+    }
+}
+
+// ==========================================
+//   CAMBIAR ESTADO RESERVA
+// ==========================================
+async function cambiarEstado(id, estado) {
+    if (!confirm(`¿Cambiar estado de reserva #${id} a "${estado}"?`)) return;
+
+    try {
+        const res = await fetch(`${API}/api/admin/reservations/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ estado })
+        });
+
+        if (!res.ok) {
+            alert("Error actualizando estado");
+            return;
+        }
+
+        alert("Estado actualizado correctamente");
+        cargarReservas();
+
+    } catch (err) {
+        alert("Error al conectar con el servidor");
+        console.error(err);
+    }
+}
+
+// ==========================================
+//   ELIMINAR RESERVA
+// ==========================================
+async function eliminarReserva(id) {
+    if (!confirm(`¿Eliminar la reserva #${id}? Esta acción no se puede deshacer.`)) return;
+
+    try {
+        const res = await fetch(`${API}/api/admin/reservations/${id}`, {
+            method: "DELETE",
+            credentials: "include"
+        });
+
+        if (!res.ok) {
+            alert("Error eliminando reserva");
+            return;
+        }
+
+        alert("Reserva eliminada");
+        cargarReservas();
+
+    } catch (err) {
+        console.error(err);
+        alert("Error al conectar con el servidor");
+    }
+}
+
+// ==========================================
+//   CERRAR SESIÓN
+// ==========================================
+function logout() {
+    fetch(`${API}/api/auth/logout`, { 
+        method: "POST",
+        credentials: "include"
+    }).finally(() => {
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userRole");
+        window.location.href = "index.html";
+    });
+}
+
+// ==========================================
+//   ICONO DE ROL
+// ==========================================
+document.getElementById("roleImage").innerHTML = `
+  <svg width="100" height="60">
+      <rect width="100" height="60" fill="#f33" />
+      <text x="50" y="35" font-size="12" text-anchor="middle" fill="#fff">ADMIN</text>
+  </svg>
+`;
+
+// ==========================================
+//   INICIO
+// ==========================================
+cargarReservas();
+</script>
+
+</body>
+</html>

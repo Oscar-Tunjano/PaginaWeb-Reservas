@@ -22,7 +22,6 @@
 // =======================================
 const API_URL = "https://reservas-backend-sm.onrender.com";
 
-
 // =======================================
 //   LOGIN
 // =======================================
@@ -30,9 +29,9 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const correo = document.getElementById("email").value.trim().toLowerCase();
-    const contraseña = document.getElementById("password").value;
+    const contrasena = document.getElementById("password").value;  // <-- CORREGIDO
 
-    if (!correo || !contraseña) {
+    if (!correo || !contrasena) {
         alert("Por favor ingresa tu correo y contraseña.");
         return;
     }
@@ -42,7 +41,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",   // NECESARIO PARA SESIONES
-            body: JSON.stringify({ correo, contraseña })
+            body: JSON.stringify({ correo, contrasena })   // <-- CORREGIDO
         });
 
         const data = await response.json();
@@ -72,5 +71,6 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
 </body>
 </html>
+
 
 

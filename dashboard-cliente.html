@@ -5,9 +5,16 @@
 <title>Cliente - Panel</title>
 
 <style>
-  table { border-collapse: collapse; width: 100% }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: left }
-  button { margin-right: 6px }
+  body { font-family: Arial, sans-serif; background: #f8f8f8; margin: 0; padding: 0; }
+  header { background: #0b6797; color: white; padding: 15px; }
+  nav a, nav button { color: white; margin-right: 12px; text-decoration: none; font-weight: bold; }
+  nav button { background: transparent; border: none; cursor: pointer; }
+  section { padding: 20px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 15px; background: #fff; }
+  th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+  th { background: #e3e3e3; }
+  button { cursor: pointer; padding: 6px 10px; border: none; border-radius: 4px; }
+  .cancelar-btn { background: #d9534f; color: white; }
 </style>
 </head>
 
@@ -15,12 +22,13 @@
 
 <header>
   <h2>Panel del Cliente</h2>
+
   <div id="roleImage"></div>
 
   <nav>
-      <a href="index.html">Inicio</a> |
-      <a href="booknow.html">Reservar</a> |
-      <a href="dashboard-cliente.html">Mis Reservas</a> |
+      <a href="index.html">Inicio</a>
+      <a href="booknow.html">Reservar</a>
+      <a href="dashboard-cliente.html">Mis Reservas</a>
       <button onclick="logout()">Cerrar sesión</button>
   </nav>
 </header>
@@ -39,7 +47,9 @@
               <th>Acciones</th>
           </tr>
       </thead>
-      <tbody></tbody>
+      <tbody>
+        <tr><td colspan="6">Cargando reservas...</td></tr>
+      </tbody>
   </table>
 </section>
 
@@ -65,18 +75,40 @@ if (localStorage.getItem("userRole") !== "cliente") {
 
 
 // ==========================================
+//   FORMATEADOR DE FECHAS
+// ==========================================
+function formatearFecha(fecha) {
+    if (!fecha) return "--";
+    return new Date(fecha).toLocaleDateString("es-CO");
+}
+
+
+// ==========================================
 //   CARGAR RESERVAS DEL SERVIDOR
 // ==========================================
 async function cargarReservas() {
     const email = localStorage.getItem("userEmail");
+    const tbody = document.querySelector("#reservasTable tbody");
+
+    tbody.innerHTML = "<tr><td colspan='6'>Cargando reservas...</td></tr>";
 
     try {
         const response = await fetch(`${API}/api/reservations/user/${email}`, {
             credentials: "include"
         });
 
+        if (response.status === 401) {
+            alert("Tu sesión expiró. Inicia sesión nuevamente.");
+            window.location.href = "login.html";
+            return;
+        }
+
+        if (!response.ok) {
+            tbody.innerHTML = `<tr><td colspan="6">No se pudieron cargar las reservas.</td></tr>`;
+            return;
+        }
+
         const reservas = await response.json();
-        const tbody = document.querySelector("#reservasTable tbody");
         tbody.innerHTML = "";
 
         if (!Array.isArray(reservas) || reservas.length === 0) {
@@ -89,12 +121,12 @@ async function cargarReservas() {
 
             tr.innerHTML = `
                 <td>${r.id}</td>
-                <td>${r.fecha_inicio}</td>
-                <td>${r.fecha_fin}</td>
+                <td>${formatearFecha(r.fecha_inicio)}</td>
+                <td>${formatearFecha(r.fecha_fin)}</td>
                 <td>${r.propiedad}</td>
                 <td>${r.estado}</td>
                 <td>
-                    <button onclick="cancelarReserva(${r.id})">Cancelar</button>
+                    <button class="cancelar-btn" onclick="cancelarReserva(${r.id})">Cancelar</button>
                 </td>
             `;
 
@@ -103,7 +135,7 @@ async function cargarReservas() {
 
     } catch (error) {
         console.error("Error cargando reservas:", error);
-        alert("No se pudieron cargar las reservas.");
+        tbody.innerHTML = `<tr><td colspan="6">Error al conectar con el servidor.</td></tr>`;
     }
 }
 
@@ -169,5 +201,6 @@ cargarReservas();
 
 </body>
 </html>
+
 
 
