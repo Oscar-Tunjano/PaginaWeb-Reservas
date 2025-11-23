@@ -27,6 +27,18 @@ if (role !== "cliente") {
   window.location.href = "unauthorized.html";
 }
 
+<header>
+  <h2>Panel del Cliente</h2>
+
+  <div id="roleImage"></div> <!-- ← AGREGAR ESTO -->
+
+  <nav>
+      <a href="index.html">Inicio</a>
+      <a href="booknow.html">Reservar</a>
+      <a href="dashboard-cliente.html">Mis Reservas</a>
+      <button onclick="logout()">Cerrar sesión</button>
+  </nav>
+</header>
 
 // ==========================================
 //   FORMATEAR FECHA
