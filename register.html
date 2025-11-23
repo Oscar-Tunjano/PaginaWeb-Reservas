@@ -1,102 +1,93 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Registro - Hospedajes SM</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f3f3;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .box {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            width: 320px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-        }
-        button {
-            margin-top: 15px;
-            width: 100%;
-            padding: 12px;
-            background: #0b6797;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>Registro - Hospedajes SM</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body {
+      font-family: Arial;
+      background: #f3f3f3;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .box {
+      width: 320px;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    button {
+      background: #0b6797;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="box">
-    <h2>Crear cuenta</h2>
+  <h2>Crear cuenta</h2>
 
-    <form onsubmit="registrarUsuario(event)">
-        <input id="nombre" type="text" placeholder="Nombre completo" required>
-        <input id="correo" type="email" placeholder="Correo electrónico" required>
-        <input id="contraseña" type="password" placeholder="Contraseña" required>
-        <button type="submit">Registrarse</button>
-    </form>
+  <form id="registerForm">
+    <input id="nombre" type="text" placeholder="Nombre completo" required>
+    <input id="correo" type="email" placeholder="Correo" required>
+    <input id="password" type="password" placeholder="Contraseña" required>
+    <button type="submit">Registrarme</button>
+  </form>
 
-    <p>¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+  <p style="margin-top:10px">
+    ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+  </p>
 </div>
 
 <script>
-// ======================================
-//  API DEL BACKEND EN RENDER
-// ======================================
+const API = "https://reservas-backend-sm.onrender.com";
 
-const API_URL = "https://reservas-backend-sm.onrender.com/api/auth/register";
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
+  const nombre = document.getElementById("nombre").value.trim();
+  const correo = document.getElementById("correo").value.trim().toLowerCase();
+  const password = document.getElementById("password").value;
 
-async function registrarUsuario(event) {
-    event.preventDefault();
+  if (!nombre || !correo || !password) {
+    alert("Completa todos los campos");
+    return;
+  }
 
-    const nombre = document.getElementById("nombre").value.trim();
-    const correo = document.getElementById("correo").value.trim().toLowerCase();
-    const contraseña = document.getElementById("contraseña").value;
+  const res = await fetch(API + "/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nombre,
+      correo,
+      password
+    })
+  });
 
-    if (!nombre || !correo || !contraseña) {
-        alert("Por favor completa todos los campos");
-        return;
-    }
+  const data = await res.json();
 
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                nombre: nombre,
-                correo: correo,
-                contrasena: contraseña   // <-- AQUÍ EL CAMBIO
-            })
-        });
+  if (!res.ok) {
+    alert(data.error || "Error al registrar usuario");
+    return;
+  }
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            alert(data.error || "Error al registrar usuario");
-            return;
-        }
-
-        alert("Registro exitoso. Ahora inicia sesión.");
-        window.location.href = "login.html";
-
-    } catch (error) {
-        console.error("Error:", error);
-        alert("No se pudo conectar con el servidor");
-    }
-}
+  alert("Registro exitoso. Ahora inicia sesión.");
+  window.location.href = "login.html";
+});
 </script>
 
+</body>
+</html>

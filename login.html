@@ -1,76 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Iniciar Sesión</title>
+  <meta charset="utf-8">
+  <title>Iniciar sesión - Hospedajes SM</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body {
+      font-family: Arial;
+      background: #f3f3f3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      background: white;
+      padding: 25px;
+      width: 320px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    button {
+      background: #0b6797;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Iniciar sesión</h2>
+<div class="box">
+  <h2>Iniciar sesión</h2>
 
-<form id="loginForm">
-    <input id="email" type="email" placeholder="Correo electrónico" required><br>
-    <input id="password" type="password" placeholder="Contraseña" required><br>
-    <button type="submit">Ingresar</button>
-</form>
+  <form id="loginForm">
+    <input id="email" type="email" placeholder="Correo" required>
+    <input id="password" type="password" placeholder="Contraseña" required>
+    <button type="submit">Entrar</button>
+  </form>
 
-<p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
+  <p style="margin-top:10px">¿No tienes cuenta?
+    <a href="register.html">Registrarme</a>
+  </p>
+</div>
 
 <script>
-// =======================================
-//   API REAL DEL BACKEND (Render)
-// =======================================
-const API_URL = "https://reservas-backend-sm.onrender.com";
+const API = "https://reservas-backend-sm.onrender.com";
 
-// =======================================
-//   LOGIN
-// =======================================
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const correo = document.getElementById("email").value.trim().toLowerCase();
-    const contrasena = document.getElementById("password").value;  // <-- CORREGIDO
+  const correo = document.getElementById("email").value.trim().toLowerCase();
+  const password = document.getElementById("password").value;
 
-    if (!correo || !contrasena) {
-        alert("Por favor ingresa tu correo y contraseña.");
-        return;
-    }
+  const res = await fetch(API + "/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ correo, password })
+  });
 
-    try {
-        const response = await fetch(API_URL + "/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",   // NECESARIO PARA SESIONES
-            body: JSON.stringify({ correo, contrasena })   // <-- CORREGIDO
-        });
+  const data = await res.json();
 
-        const data = await response.json();
+  if (!res.ok) {
+    alert(data.error || "Error en login");
+    return;
+  }
 
-        if (!response.ok) {
-            alert(data.error || "Credenciales incorrectas");
-            return;
-        }
+  localStorage.setItem("userEmail", data.user.correo);
+  localStorage.setItem("userRole", data.user.role);
 
-        // Guardar datos para el dashboard
-        localStorage.setItem("userEmail", data.user.correo);
-        localStorage.setItem("userRole", data.user.role);
-
-        // Redirección según rol
-        if (data.user.role === "admin") {
-            window.location.href = "dashboard-admin.html";
-        } else {
-            window.location.href = "dashboard-cliente.html";
-        }
-
-    } catch (error) {
-        console.error("Error en login:", error);
-        alert("Error al conectar con el servidor");
-    }
+  if (data.user.role === "admin") {
+    window.location.href = "dashboard-admin.html";
+  } else {
+    window.location.href = "dashboard-cliente.html";
+  }
 });
 </script>
 
 </body>
 </html>
-
-
-

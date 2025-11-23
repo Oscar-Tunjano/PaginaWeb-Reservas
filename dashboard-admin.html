@@ -5,9 +5,15 @@
 <title>Panel Administrador</title>
 
 <style>
-  table { border-collapse: collapse; width: 100% }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: left }
-  button { margin-right: 6px }
+  body { font-family: Arial; background: #f3f3f3; margin:0; padding:0; }
+  header { background:#d9534f; color:white; padding:15px; }
+  nav a, nav button { color:white; margin-right:12px; text-decoration:none; }
+  table { border-collapse: collapse; width: 100%; background:white; margin-top:20px; }
+  th, td { border: 1px solid #ccc; padding: 8px; }
+  button { cursor:pointer; padding:6px 10px; border:none; border-radius:4px; }
+  .approve { background:#5cb85c; color:white; }
+  .reject { background:#f0ad4e; color:white; }
+  .delete { background:#d9534f; color:white; }
 </style>
 </head>
 
@@ -28,7 +34,7 @@
 </header>
 
 <section>
-  <h3>Reservas (Administrador: Ver, cambiar estado, eliminar)</h3>
+  <h3>Reservas (Administrador)</h3>
 
   <table id="reservasTable">
       <thead>
@@ -47,134 +53,132 @@
 </section>
 
 <script>
-// ==========================================
-//   BACKEND REAL EN RENDER
-// ==========================================
 const API = "https://reservas-backend-sm.onrender.com";
 
-// ==========================================
-//   PROTEGER ACCESO SOLO PARA ADMIN
-// ==========================================
-if (localStorage.getItem("userRole") !== "admin") {
-    alert("Acceso solo para administradores");
-    window.location.href = "unauthorized.html";
+// ===============================
+// PROTEGER PANEL SOLO ADMIN
+// ===============================
+const role = localStorage.getItem("userRole");
+if (role !== "admin") {
+  alert("Acceso solo para administradores");
+  window.location.href = "unauthorized.html";
 }
 
-// ==========================================
-//   CARGAR TODAS LAS RESERVAS
-// ==========================================
+// ===============================
+// CARGAR TODAS LAS RESERVAS
+// ===============================
 async function cargarReservas() {
-    try {
-        const res = await fetch(`${API}/api/admin/reservations`, {
-            credentials: "include"
-        });
-
-        const reservas = await res.json();
-        const tbody = document.querySelector("#reservasTable tbody");
-        tbody.innerHTML = "";
-
-        if (!Array.isArray(reservas) || reservas.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7">No hay reservas registradas.</td></tr>`;
-            return;
-        }
-
-        reservas.forEach(r => {
-            const tr = document.createElement("tr");
-
-            tr.innerHTML = `
-                <td>${r.id}</td>
-                <td>${r.propiedad}</td>
-                <td>${r.usuario}</td>
-                <td>${r.fecha_inicio}</td>
-                <td>${r.fecha_fin}</td>
-                <td>${r.estado}</td>
-                <td>
-                    <button onclick="cambiarEstado(${r.id}, 'aprobada')">Aprobar</button>
-                    <button onclick="cambiarEstado(${r.id}, 'rechazada')">Rechazar</button>
-                    <button onclick="eliminarReserva(${r.id})">Eliminar</button>
-                </td>
-            `;
-
-            tbody.appendChild(tr);
-        });
-
-    } catch (err) {
-        console.error("Error cargando reservas:", err);
-        alert("No se pudieron cargar las reservas.");
-    }
-}
-
-// ==========================================
-//   CAMBIAR ESTADO RESERVA
-// ==========================================
-async function cambiarEstado(id, estado) {
-    if (!confirm(`¿Cambiar estado de reserva #${id} a "${estado}"?`)) return;
-
-    try {
-        const res = await fetch(`${API}/api/admin/reservations/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ estado })
-        });
-
-        if (!res.ok) {
-            alert("Error actualizando estado");
-            return;
-        }
-
-        alert("Estado actualizado correctamente");
-        cargarReservas();
-
-    } catch (err) {
-        alert("Error al conectar con el servidor");
-        console.error(err);
-    }
-}
-
-// ==========================================
-//   ELIMINAR RESERVA
-// ==========================================
-async function eliminarReserva(id) {
-    if (!confirm(`¿Eliminar la reserva #${id}? Esta acción no se puede deshacer.`)) return;
-
-    try {
-        const res = await fetch(`${API}/api/admin/reservations/${id}`, {
-            method: "DELETE",
-            credentials: "include"
-        });
-
-        if (!res.ok) {
-            alert("Error eliminando reserva");
-            return;
-        }
-
-        alert("Reserva eliminada");
-        cargarReservas();
-
-    } catch (err) {
-        console.error(err);
-        alert("Error al conectar con el servidor");
-    }
-}
-
-// ==========================================
-//   CERRAR SESIÓN
-// ==========================================
-function logout() {
-    fetch(`${API}/api/auth/logout`, { 
-        method: "POST",
-        credentials: "include"
-    }).finally(() => {
-        localStorage.removeItem("userEmail");
-        localStorage.removeItem("userRole");
-        window.location.href = "index.html";
+  try {
+    const res = await fetch(`${API}/api/admin/reservations`, {
+      credentials: "include"
     });
+
+    const reservas = await res.json();
+    const tbody = document.querySelector("#reservasTable tbody");
+    tbody.innerHTML = "";
+
+    if (!Array.isArray(reservas) || reservas.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7">No hay reservas registradas.</td></tr>`;
+      return;
+    }
+
+    reservas.forEach(r => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${r.id}</td>
+        <td>${r.propiedad}</td>
+        <td>${r.usuario}</td>
+        <td>${r.fecha_inicio}</td>
+        <td>${r.fecha_fin}</td>
+        <td>${r.estado}</td>
+        <td>
+          <button class="approve" onclick="cambiarEstado(${r.id}, 'aprobada')">Aprobar</button>
+          <button class="reject" onclick="cambiarEstado(${r.id}, 'rechazada')">Rechazar</button>
+          <button class="delete" onclick="eliminarReserva(${r.id})">Eliminar</button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("Error cargando reservas:", err);
+    alert("No se pudieron cargar las reservas.");
+  }
 }
 
-// ==========================================
-//   ICONO DE ROL
-// ==========================================
+// ===============================
+// CAMBIAR ESTADO RESERVA
+// ===============================
+async function cambiarEstado(id, estado) {
+  if (!confirm(`¿Cambiar estado de reserva #${id} a "${estado}"?`)) return;
+
+  try {
+    const res = await fetch(`${API}/api/admin/reservations/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ estado })
+    });
+
+    if (!res.ok) {
+      alert("Error actualizando estado");
+      return;
+    }
+
+    alert("Estado actualizado correctamente");
+    cargarReservas();
+
+  } catch (err) {
+    alert("Error al conectar con el servidor");
+    console.error(err);
+  }
+}
+
+// ===============================
+// ELIMINAR RESERVA
+// ===============================
+async function eliminarReserva(id) {
+  if (!confirm(`¿Eliminar la reserva #${id}? Esta acción es permanente.`)) return;
+
+  try {
+    const res = await fetch(`${API}/api/admin/reservations/${id}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      alert("Error eliminando reserva");
+      return;
+    }
+
+    alert("Reserva eliminada");
+    cargarReservas();
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al conectar con el servidor");
+  }
+}
+
+// ===============================
+// CERRAR SESIÓN
+// ===============================
+function logout() {
+  fetch(`${API}/api/auth/logout`, {
+    method: "POST",
+    credentials: "include"
+  }).finally(() => {
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userRole");
+    window.location.href = "index.html";
+  });
+}
+
+// ===============================
+// ICONO ROL ADMIN
+// ===============================
 document.getElementById("roleImage").innerHTML = `
   <svg width="100" height="60">
       <rect width="100" height="60" fill="#f33" />
@@ -182,9 +186,9 @@ document.getElementById("roleImage").innerHTML = `
   </svg>
 `;
 
-// ==========================================
-//   INICIO
-// ==========================================
+// ===============================
+// INICIO
+// ===============================
 cargarReservas();
 </script>
 
