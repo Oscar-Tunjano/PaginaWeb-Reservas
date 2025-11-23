@@ -59,3 +59,92 @@ async function cargarPropiedades() {
   try {
     const res = await fetch(API_URL + "/api/propiedades");
     const props = await res.json();
+
+    const sel = document.getElementById("propiedad_id");
+    sel.innerHTML = "<option value=''>Selecciona una propiedad</option>";
+
+    props.forEach(p => {
+      const option = document.createElement("option");
+      option.value = p.id;
+      option.textContent = `${p.titulo} — ${p.ciudad} — $${p.precio}`;
+      sel.appendChild(option);
+    });
+
+  } catch (err) {
+    console.error("Error cargando propiedades:", err);
+    alert("Error cargando propiedades.");
+  }
+}
+
+
+// ============================================
+//   Calendarios
+// ============================================
+$('#arrival_date, #departure_date').datepicker({
+  format: 'yyyy-mm-dd',
+  autoclose: true
+});
+
+
+// ============================================
+//   Crear Reserva Real
+// ============================================
+document.getElementById("reservaForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const user = localStorage.getItem("userEmail");
+  if (!user) {
+    alert("Debes iniciar sesión para reservar.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  const propiedad_id = document.getElementById("propiedad_id").value;
+  const fecha_inicio = document.getElementById("arrival_date").value;
+  const fecha_fin = document.getElementById("departure_date").value;
+
+  if (!propiedad_id) {
+    alert("Selecciona una propiedad.");
+    return;
+  }
+
+  try {
+    const payload = {
+      propiedad_id: Number(propiedad_id),
+      fecha_inicio,
+      fecha_fin
+    };
+
+    const res = await fetch(API_URL + "/api/reservas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Error al crear reserva.");
+      return;
+    }
+
+    alert("Reserva creada correctamente.");
+    window.location.href = "dashboard-cliente.html";
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al conectar con el servidor.");
+  }
+});
+
+
+// ============================================
+//   INICIO
+// ============================================
+cargarPropiedades();
+
+</script>
+
+</body>
+</html>
