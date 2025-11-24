@@ -1,194 +1,235 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta charset="utf-8">
-<title>Panel Administrador</title>
+    <meta charset="utf-8">
+    <title>Panel Administrador</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-  body { font-family: Arial; background: #f3f3f3; margin:0; padding:0; }
-  header { background:#d9534f; color:white; padding:15px; }
-  nav a, nav button { color:white; margin-right:12px; text-decoration:none; }
-  table { border-collapse: collapse; width: 100%; background:white; margin-top:20px; }
-  th, td { border: 1px solid #ccc; padding: 8px; }
-  button { cursor:pointer; padding:6px 10px; border:none; border-radius:4px; }
-  .approve { background:#5cb85c; color:white; }
-  .reject { background:#f0ad4e; color:white; }
-  .delete { background:#d9534f; color:white; }
-</style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f3f3;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #c62828;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        nav a, nav button {
+            color: white;
+            margin-right: 12px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        section {
+            padding: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #e0e0e0;
+        }
+        button {
+            cursor: pointer;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+        }
+        .aprobar { background: #2e7d32; color: white; }
+        .rechazar { background: #d32f2f; color: white; }
+        .eliminar { background: #6a1b9a; color: white; }
+    </style>
 </head>
-
 <body>
 
 <header>
-  <h2>Panel Administrador</h2>
+    <div>
+        <h2 style="margin:0;">Panel Administrador</h2>
+        <div id="roleImage"></div>
+    </div>
 
-  <div id="roleImage"></div>
-
-  <nav>
-      <a href="index.html">Inicio</a> |
-      <a href="#">Alojamientos</a> |
-      <a href="dashboard-admin.html">Reservas</a> |
-      <a href="#">Usuarios</a> |
-      <button onclick="logout()">Cerrar sesión</button>
-  </nav>
+    <nav>
+        <a href="index.html">Inicio</a>
+        <a href="dashboard-admin.html">Reservas</a>
+        <a href="#">Usuarios</a>
+        <button onclick="logout()">Cerrar sesión</button>
+    </nav>
 </header>
 
 <section>
-  <h3>Reservas (Administrador)</h3>
+    <h3>Gestión de Reservas</h3>
 
-  <table id="reservasTable">
-      <thead>
-          <tr>
-              <th>ID</th>
-              <th>Propiedad</th>
-              <th>Usuario</th>
-              <th>Check-in</th>
-              <th>Check-out</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-          </tr>
-      </thead>
-      <tbody></tbody>
-  </table>
+    <table id="reservasTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Propiedad</th>
+                <th>Usuario</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="7">Cargando reservas...</td></tr>
+        </tbody>
+    </table>
 </section>
 
 <script>
+// ==========================================
+//   URL DEL BACKEND
+// ==========================================
 const API = "https://reservas-backend-sm.onrender.com";
 
-// ===============================
-// PROTEGER PANEL SOLO ADMIN
-// ===============================
-const role = localStorage.getItem("userRole");
-if (role !== "admin") {
-  alert("Acceso solo para administradores");
-  window.location.href = "unauthorized.html";
+// ==========================================
+//   PROTEGER ACCESO SOLO PARA ADMIN
+// ==========================================
+if (localStorage.getItem("userRole") !== "admin") {
+    alert("Acceso solo para administradores");
+    window.location.href = "unauthorized.html";
 }
 
-// ===============================
-// CARGAR TODAS LAS RESERVAS
-// ===============================
+// ==========================================
+//   CARGAR TODAS LAS RESERVAS (RUTA CORRECTA)
+// ==========================================
 async function cargarReservas() {
-  try {
-    const res = await fetch(`${API}/api/admin/reservations`, {
-      credentials: "include"
-    });
+    try {
+        const res = await fetch(`${API}/api/admin/reservations`, { 
+            credentials: "include" 
+        });
 
-    const reservas = await res.json();
-    const tbody = document.querySelector("#reservasTable tbody");
-    tbody.innerHTML = "";
+        const reservas = await res.json();
+        const tbody = document.querySelector("#reservasTable tbody");
+        tbody.innerHTML = "";
 
-    if (!Array.isArray(reservas) || reservas.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7">No hay reservas registradas.</td></tr>`;
-      return;
+        if (!Array.isArray(reservas) || reservas.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7">No hay reservas registradas.</td></tr>`;
+            return;
+        }
+
+        reservas.forEach(r => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${r.id}</td>
+                <td>${r.propiedad}</td>
+                <td>${r.usuario}</td>
+                <td>${r.fecha_inicio}</td>
+                <td>${r.fecha_fin}</td>
+                <td>${r.estado}</td>
+                <td>
+                    <button class="aprobar" onclick="cambiarEstado(${r.id}, 'aprobada')">Aprobar</button>
+                    <button class="rechazar" onclick="cambiarEstado(${r.id}, 'rechazada')">Rechazar</button>
+                    <button class="eliminar" onclick="eliminarReserva(${r.id})">Eliminar</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (err) {
+        alert("Error cargando reservas");
+        console.error(err);
     }
-
-    reservas.forEach(r => {
-      const tr = document.createElement("tr");
-
-      tr.innerHTML = `
-        <td>${r.id}</td>
-        <td>${r.propiedad}</td>
-        <td>${r.usuario}</td>
-        <td>${r.fecha_inicio}</td>
-        <td>${r.fecha_fin}</td>
-        <td>${r.estado}</td>
-        <td>
-          <button class="approve" onclick="cambiarEstado(${r.id}, 'aprobada')">Aprobar</button>
-          <button class="reject" onclick="cambiarEstado(${r.id}, 'rechazada')">Rechazar</button>
-          <button class="delete" onclick="eliminarReserva(${r.id})">Eliminar</button>
-        </td>
-      `;
-
-      tbody.appendChild(tr);
-    });
-
-  } catch (err) {
-    console.error("Error cargando reservas:", err);
-    alert("No se pudieron cargar las reservas.");
-  }
 }
 
-// ===============================
-// CAMBIAR ESTADO RESERVA
-// ===============================
+// ==========================================
+//   CAMBIAR ESTADO (RUTA CORRECTA)
+// ==========================================
 async function cambiarEstado(id, estado) {
-  if (!confirm(`¿Cambiar estado de reserva #${id} a "${estado}"?`)) return;
+    if (!confirm(`¿Cambiar estado de la reserva #${id} a '${estado}'?`)) return;
 
-  try {
-    const res = await fetch(`${API}/api/admin/reservations/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ estado })
-    });
+    try {
+        const res = await fetch(`${API}/api/admin/reservations/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ estado })
+        });
 
-    if (!res.ok) {
-      alert("Error actualizando estado");
-      return;
+        if (!res.ok) {
+            alert("No se pudo actualizar el estado");
+            return;
+        }
+
+        alert("Estado actualizado correctamente");
+        cargarReservas();
+
+    } catch (err) {
+        alert("Error conectando con el servidor");
     }
-
-    alert("Estado actualizado correctamente");
-    cargarReservas();
-
-  } catch (err) {
-    alert("Error al conectar con el servidor");
-    console.error(err);
-  }
 }
 
-// ===============================
-// ELIMINAR RESERVA
-// ===============================
+// ==========================================
+//   ELIMINAR RESERVA (RUTA CORRECTA)
+// ==========================================
 async function eliminarReserva(id) {
-  if (!confirm(`¿Eliminar la reserva #${id}? Esta acción es permanente.`)) return;
+    if (!confirm(`¿Eliminar la reserva #${id}? Esta acción es irreversible.`)) return;
 
-  try {
-    const res = await fetch(`${API}/api/admin/reservations/${id}`, {
-      method: "DELETE",
-      credentials: "include"
-    });
+    try {
+        const res = await fetch(`${API}/api/admin/reservations/${id}`, {
+            method: "DELETE",
+            credentials: "include"
+        });
 
-    if (!res.ok) {
-      alert("Error eliminando reserva");
-      return;
+        if (!res.ok) {
+            alert("No se pudo eliminar la reserva");
+            return;
+        }
+
+        alert("Reserva eliminada correctamente");
+        cargarReservas();
+
+    } catch (err) {
+        alert("Error conectando con el servidor");
     }
-
-    alert("Reserva eliminada");
-    cargarReservas();
-
-  } catch (err) {
-    console.error(err);
-    alert("Error al conectar con el servidor");
-  }
 }
 
-// ===============================
-// CERRAR SESIÓN
-// ===============================
+// ==========================================
+//   CERRAR SESIÓN
+// ==========================================
 function logout() {
-  fetch(`${API}/api/auth/logout`, {
-    method: "POST",
-    credentials: "include"
-  }).finally(() => {
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userRole");
-    window.location.href = "index.html";
-  });
+    fetch(`${API}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include"
+    }).finally(() => {
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userRole");
+        window.location.href = "index.html";
+    });
 }
 
-// ===============================
-// ICONO ROL ADMIN
-// ===============================
+// ==========================================
+//   ICONO DE ROL ADMIN
+// ==========================================
 document.getElementById("roleImage").innerHTML = `
   <svg width="100" height="60">
-      <rect width="100" height="60" fill="#f33" />
+      <rect width="100" height="60" fill="#c62828" />
       <text x="50" y="35" font-size="12" text-anchor="middle" fill="#fff">ADMIN</text>
   </svg>
 `;
 
-// ===============================
-// INICIO
-// ===============================
+// ==========================================
+//   INICIO
+// ==========================================
 cargarReservas();
 </script>
 
