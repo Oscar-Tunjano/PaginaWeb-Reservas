@@ -63,6 +63,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const res = await fetch(API + "/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({ correo, password })
   });
 
@@ -73,13 +74,12 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     return;
   }
 
-  // ============================
-  //  GUARDAR TOKEN IMPORTANTE
-  // ============================
+  // ✅ Guardar token, correo y rol correctamente
   localStorage.setItem("token", data.token);
   localStorage.setItem("userEmail", data.user.correo);
   localStorage.setItem("userRole", data.user.role);
 
+  // Redirección según rol
   if (data.user.role === "admin") {
     window.location.href = "dashboard-admin.html";
   } else {

@@ -61,16 +61,12 @@ const API = "https://reservas-backend-sm.onrender.com";
 //   VERIFICAR SESIÓN
 // ==========================================
 const email = localStorage.getItem("userEmail");
+const token = localStorage.getItem("token");
 let role = localStorage.getItem("userRole");
 
-if (!email) {
+if (!email || !token) {
   alert("Debes iniciar sesión.");
   window.location.href = "login.html";
-}
-
-if (!role) {
-  role = "cliente";
-  localStorage.setItem("userRole", "cliente");
 }
 
 if (role !== "cliente") {
@@ -86,7 +82,7 @@ function formatearFecha(f) {
 }
 
 // ==========================================
-//   CARGAR RESERVAS
+//   CARGAR RESERVAS (CON TOKEN)
 // ==========================================
 async function cargarReservas() {
   const tbody = document.querySelector("#reservasTable tbody");
@@ -94,7 +90,9 @@ async function cargarReservas() {
 
   try {
     const res = await fetch(`${API}/api/reservas/user/${email}`, {
-      credentials: "include"
+      headers: {
+        "Authorization": "Bearer " + token   // 🔥 TOKEN AÑADIDO
+      }
     });
 
     if (!res.ok) {
@@ -132,14 +130,16 @@ async function cargarReservas() {
 }
 
 // ==========================================
-//   CANCELAR RESERVA
+//   CANCELAR RESERVA (CON TOKEN)
 // ==========================================
 async function cancelarReserva(id) {
   if (!confirm(`¿Cancelar reserva #${id}?`)) return;
 
   const res = await fetch(`${API}/api/reservas/${id}`, {
     method: "DELETE",
-    credentials: "include"
+    headers: {
+      "Authorization": "Bearer " + token  // 🔥 TOKEN AÑADIDO
+    }
   });
 
   if (res.ok) {
@@ -154,13 +154,8 @@ async function cancelarReserva(id) {
 //   LOGOUT
 // ==========================================
 function logout() {
-  fetch(`${API}/api/auth/logout`, {
-    method: "POST",
-    credentials: "include"
-  }).finally(() => {
-    localStorage.clear();
-    window.location.href = "index.html";
-  });
+  localStorage.clear();
+  window.location.href = "index.html";
 }
 
 // ==========================================
