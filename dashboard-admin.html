@@ -69,7 +69,7 @@
     <nav>
         <a href="index.html">Inicio</a>
         <a href="dashboard-admin.html">Reservas</a>
-        <a href="#">Usuarios</a>
+        <a href="#">Usuarios</a> <!-- Para futuro -->
         <button onclick="logout()">Cerrar sesión</button>
     </nav>
 </header>
@@ -110,12 +110,12 @@ if (localStorage.getItem("userRole") !== "admin") {
 }
 
 // ==========================================
-//   CARGAR TODAS LAS RESERVAS (RUTA CORRECTA)
+//   CARGAR TODAS LAS RESERVAS
 // ==========================================
 async function cargarReservas() {
     try {
-        const res = await fetch(`${API}/api/admin/reservations`, { 
-            credentials: "include" 
+        const res = await fetch(`${API}/api/admin/reservas`, {
+            credentials: "include"
         });
 
         const reservas = await res.json();
@@ -129,6 +129,7 @@ async function cargarReservas() {
 
         reservas.forEach(r => {
             const tr = document.createElement("tr");
+
             tr.innerHTML = `
                 <td>${r.id}</td>
                 <td>${r.propiedad}</td>
@@ -142,23 +143,24 @@ async function cargarReservas() {
                     <button class="eliminar" onclick="eliminarReserva(${r.id})">Eliminar</button>
                 </td>
             `;
+
             tbody.appendChild(tr);
         });
 
     } catch (err) {
-        alert("Error cargando reservas");
-        console.error(err);
+        console.error("Error cargando reservas:", err);
+        alert("No se pudieron cargar las reservas.");
     }
 }
 
 // ==========================================
-//   CAMBIAR ESTADO (RUTA CORRECTA)
+//   CAMBIAR ESTADO RESERVA
 // ==========================================
 async function cambiarEstado(id, estado) {
-    if (!confirm(`¿Cambiar estado de la reserva #${id} a '${estado}'?`)) return;
+    if (!confirm(`¿Cambiar estado de reserva #${id} a '${estado}'?`)) return;
 
     try {
-        const res = await fetch(`${API}/api/admin/reservations/${id}`, {
+        const res = await fetch(`${API}/api/admin/reservas/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -174,18 +176,19 @@ async function cambiarEstado(id, estado) {
         cargarReservas();
 
     } catch (err) {
+        console.error(err);
         alert("Error conectando con el servidor");
     }
 }
 
 // ==========================================
-//   ELIMINAR RESERVA (RUTA CORRECTA)
+//   ELIMINAR RESERVA
 // ==========================================
 async function eliminarReserva(id) {
-    if (!confirm(`¿Eliminar la reserva #${id}? Esta acción es irreversible.`)) return;
+    if (!confirm(`¿Eliminar la reserva #${id}? Esta acción no se puede deshacer.`)) return;
 
     try {
-        const res = await fetch(`${API}/api/admin/reservations/${id}`, {
+        const res = await fetch(`${API}/api/admin/reservas/${id}`, {
             method: "DELETE",
             credentials: "include"
         });
@@ -195,10 +198,11 @@ async function eliminarReserva(id) {
             return;
         }
 
-        alert("Reserva eliminada correctamente");
+        alert("Reserva eliminada");
         cargarReservas();
 
     } catch (err) {
+        console.error(err);
         alert("Error conectando con el servidor");
     }
 }
@@ -218,12 +222,12 @@ function logout() {
 }
 
 // ==========================================
-//   ICONO DE ROL ADMIN
+//   ICONO ADMIN
 // ==========================================
 document.getElementById("roleImage").innerHTML = `
-  <svg width="100" height="60">
-      <rect width="100" height="60" fill="#c62828" />
-      <text x="50" y="35" font-size="12" text-anchor="middle" fill="#fff">ADMIN</text>
+  <svg width="100" height="50">
+      <rect width="100" height="50" fill="#c62828" />
+      <text x="50" y="30" font-size="14" text-anchor="middle" fill="#fff">ADMIN</text>
   </svg>
 `;
 

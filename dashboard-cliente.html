@@ -1,97 +1,180 @@
 <!DOCTYPE html>
-const tr = document.createElement("tr");
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Panel Cliente</title>
+  <style>
+    body { font-family: Arial; background:#f8f8f8; margin:0; padding:0; }
+    header { background:#0b6797; color:white; padding:15px; }
+    nav a, nav button { color:white; margin-right:12px; text-decoration:none; font-weight:bold; }
+    nav button { background:transparent; border:none; cursor:pointer; }
+    table { width:100%; border-collapse:collapse; background:white; margin-top:20px; }
+    th, td { padding:10px; border:1px solid #ccc; }
+    th { background:#e3e3e3; }
+    .cancelar-btn { background:#d9534f; color:white; border:none; padding:8px; cursor:pointer; border-radius:4px; }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h2>Panel del Cliente</h2>
+
+  <div id="roleImage"></div>
+
+  <nav>
+    <a href="index.html">Inicio</a>
+    <a href="booknow.html">Reservar</a>
+    <a href="dashboard-cliente.html">Mis Reservas</a>
+    <button onclick="logout()">Cerrar sesión</button>
+  </nav>
+</header>
+
+<section>
+  <h3>Mis Reservas</h3>
+
+  <table id="reservasTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Check-in</th>
+        <th>Check-out</th>
+        <th>Propiedad</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="6">Cargando reservas...</td></tr>
+    </tbody>
+  </table>
+</section>
 
 
-tr.innerHTML = `
-<td>${r.id}</td>
-<td>${formatearFecha(r.fecha_inicio)}</td>
-<td>${formatearFecha(r.fecha_fin)}</td>
-<td>${r.propiedad}</td>
-<td>${r.estado}</td>
-<td>
-<button class="cancelar-btn" onclick="cancelarReserva(${r.id})">
-Cancelar
-</button>
-</td>
-`;
-
-
-tbody.appendChild(tr);
-});
-
-
-} catch (error) {
-console.error("Error cargando reservas:", error);
-tbody.innerHTML = `<tr><td colspan="6">Error al conectar con el servidor.</td></tr>`;
-}
-}
-
+<script>
+// ==========================================
+//   CONFIG BACKEND
+// ==========================================
+const API = "https://reservas-backend-sm.onrender.com";
 
 // ==========================================
-// CANCELAR RESERVA
+//   VERIFICAR SESIÓN
+// ==========================================
+const email = localStorage.getItem("userEmail");
+let role = localStorage.getItem("userRole");
+
+if (!email) {
+  alert("Debes iniciar sesión.");
+  window.location.href = "login.html";
+}
+
+if (!role) {
+  role = "cliente";
+  localStorage.setItem("userRole", "cliente");
+}
+
+if (role !== "cliente") {
+  alert("Acceso no permitido.");
+  window.location.href = "unauthorized.html";
+}
+
+// ==========================================
+//   FORMATEAR FECHA
+// ==========================================
+function formatearFecha(f) {
+  return new Date(f).toLocaleDateString("es-CO");
+}
+
+// ==========================================
+//   CARGAR RESERVAS
+// ==========================================
+async function cargarReservas() {
+  const tbody = document.querySelector("#reservasTable tbody");
+  tbody.innerHTML = "<tr><td colspan='6'>Cargando reservas...</td></tr>";
+
+  try {
+    const res = await fetch(`${API}/api/reservas/user/${email}`, {
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      tbody.innerHTML = "<tr><td colspan='6'>No se pudieron cargar reservas.</td></tr>";
+      return;
+    }
+
+    const reservas = await res.json();
+    tbody.innerHTML = "";
+
+    if (!reservas.length) {
+      tbody.innerHTML = "<tr><td colspan='6'>No tienes reservas registradas.</td></tr>";
+      return;
+    }
+
+    reservas.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.id}</td>
+        <td>${formatearFecha(r.fecha_inicio)}</td>
+        <td>${formatearFecha(r.fecha_fin)}</td>
+        <td>${r.propiedad}</td>
+        <td>${r.estado}</td>
+        <td>
+          <button class="cancelar-btn" onclick="cancelarReserva(${r.id})">Cancelar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = "<tr><td colspan='6'>Error al conectar con el servidor.</td></tr>";
+  }
+}
+
+// ==========================================
+//   CANCELAR RESERVA
 // ==========================================
 async function cancelarReserva(id) {
-if (!confirm(`¿Seguro que deseas cancelar la reserva #${id}?`)) return;
+  if (!confirm(`¿Cancelar reserva #${id}?`)) return;
 
+  const res = await fetch(`${API}/api/reservas/${id}`, {
+    method: "DELETE",
+    credentials: "include"
+  });
 
-try {
-const response = await fetch(`${API}/api/reservas/${id}`, {
-method: "DELETE",
-credentials: "include"
-});
-
-
-if (!response.ok) {
-alert("Error al cancelar la reserva.");
-return;
+  if (res.ok) {
+    alert("Reserva cancelada.");
+    cargarReservas();
+  } else {
+    alert("Error al cancelar.");
+  }
 }
-
-
-alert("Reserva cancelada correctamente.");
-cargarReservas();
-
-
-} catch (err) {
-console.error(err);
-alert("Error al conectar con el servidor.");
-}
-}
-
 
 // ==========================================
-// CERRAR SESIÓN
+//   LOGOUT
 // ==========================================
 function logout() {
-fetch(`${API}/api/auth/logout`, {
-method: "POST",
-credentials: "include"
-}).finally(() => {
-localStorage.removeItem("userEmail");
-localStorage.removeItem("userRole");
-window.location.href = "index.html";
-});
+  fetch(`${API}/api/auth/logout`, {
+    method: "POST",
+    credentials: "include"
+  }).finally(() => {
+    localStorage.clear();
+    window.location.href = "index.html";
+  });
 }
 
-
 // ==========================================
-// IMAGEN ROL
+//   ICONO CLIENTE
 // ==========================================
 document.getElementById("roleImage").innerHTML = `
-<svg width="100" height="60">
-<rect width="100" height="60" fill="#29f"></rect>
-<text x="50" y="35" font-size="12" text-anchor="middle" fill="#fff">
-CLIENTE
-</text>
-</svg>
+  <svg width="100" height="40">
+    <rect width="100" height="40" fill="#0b6797" />
+    <text x="50" y="25" text-anchor="middle" fill="white" font-size="14">CLIENTE</text>
+  </svg>
 `;
 
-
-// ==========================================
-// INICIAR
-// ==========================================
 cargarReservas();
 </script>
-
 
 </body>
 </html>
