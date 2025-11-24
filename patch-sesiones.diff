@@ -1,0 +1,42 @@
+diff --git a/js/login.js b/js/login.js
+index 1111111..2222222 100644
+--- a/js/login.js
++++ b/js/login.js
+@@ -10,6 +10,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
+     method: "POST",
+     headers: { "Content-Type": "application/json" },
++    credentials: "include",
+     body: JSON.stringify({ email, password }),
+   });
+
+diff --git a/js/contact.js b/js/contact.js
+index 3333333..4444444 100644
+--- a/js/contact.js
++++ b/js/contact.js
+@@ -15,6 +15,7 @@ fetch("https://reservas-backend-sm.onrender.com/api/contact", {
+   method: "POST",
+   headers: { "Content-Type": "application/json" },
++  credentials: "include",
+   body: JSON.stringify({ nombre, email, mensaje })
+ })
+
+diff --git a/js/booknow.js b/js/booknow.js
+index 5555555..6666666 100644
+--- a/js/booknow.js
++++ b/js/booknow.js
+@@ -45,6 +45,7 @@ fetch("https://reservas-backend-sm.onrender.com/api/reservas", {
+   method: "POST",
+   headers: { "Content-Type": "application/json" },
++  credentials: "include",
+   body: JSON.stringify(reservaData),
+ })
+
+diff --git a/js/dashboard_cliente.js b/js/dashboard_cliente.js
+index 7777777..8888888 100644
+--- a/js/dashboard_cliente.js
++++ b/js/dashboard_cliente.js
+@@ -20,6 +20,7 @@ fetch("https://reservas-backend-sm.onrender.com/api/reservas/mias", {
+   method: "GET",
+   headers: { "Content-Type": "application/json" },
++  credentials: "include",
+ })
