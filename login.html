@@ -63,7 +63,6 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const res = await fetch(API + "/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify({ correo, password })
   });
 
@@ -74,6 +73,10 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     return;
   }
 
+  // ============================
+  //  GUARDAR TOKEN IMPORTANTE
+  // ============================
+  localStorage.setItem("token", data.token);
   localStorage.setItem("userEmail", data.user.correo);
   localStorage.setItem("userRole", data.user.role);
 

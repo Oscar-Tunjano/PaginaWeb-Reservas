@@ -41,20 +41,15 @@
   </form>
 </div>
 
-
 <script src="js/jquery-3.2.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
 
 <script>
-// ============================================
-//   URL REAL DEL BACKEND EN RENDER
-// ============================================
 const API_URL = "https://reservas-backend-sm.onrender.com";
 
-
-// ============================================
+// ============================
 //   Cargar Propiedades
-// ============================================
+// ============================
 async function cargarPropiedades() {
   try {
     const res = await fetch(API_URL + "/api/propiedades");
@@ -71,29 +66,25 @@ async function cargarPropiedades() {
     });
 
   } catch (err) {
-    console.error("Error cargando propiedades:", err);
     alert("Error cargando propiedades.");
   }
 }
 
-
-// ============================================
-//   Calendarios
-// ============================================
+// Calendarios
 $('#arrival_date, #departure_date').datepicker({
   format: 'yyyy-mm-dd',
   autoclose: true
 });
 
-
-// ============================================
-//   Crear Reserva Real
-// ============================================
+// ============================
+//   Crear Reserva
+// ============================
 document.getElementById("reservaForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const user = localStorage.getItem("userEmail");
-  if (!user) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
     alert("Debes iniciar sesión para reservar.");
     window.location.href = "login.html";
     return;
@@ -103,47 +94,34 @@ document.getElementById("reservaForm").addEventListener("submit", async (e) => {
   const fecha_inicio = document.getElementById("arrival_date").value;
   const fecha_fin = document.getElementById("departure_date").value;
 
-  if (!propiedad_id) {
-    alert("Selecciona una propiedad.");
+  const payload = {
+    propiedad_id: Number(propiedad_id),
+    fecha_inicio,
+    fecha_fin
+  };
+
+  const res = await fetch(API_URL + "/api/reservas", {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Error al crear reserva.");
     return;
   }
 
-  try {
-    const payload = {
-      propiedad_id: Number(propiedad_id),
-      fecha_inicio,
-      fecha_fin
-    };
-
-    const res = await fetch(API_URL + "/api/reservas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || "Error al crear reserva.");
-      return;
-    }
-
-    alert("Reserva creada correctamente.");
-    window.location.href = "dashboard-cliente.html";
-
-  } catch (err) {
-    console.error(err);
-    alert("Error al conectar con el servidor.");
-  }
+  alert("Reserva creada correctamente.");
+  window.location.href = "dashboard-cliente.html";
 });
 
-
-// ============================================
-//   INICIO
-// ============================================
+// Iniciar
 cargarPropiedades();
-
 </script>
 
 </body>
