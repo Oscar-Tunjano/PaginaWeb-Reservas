@@ -1,58 +1,5 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <title>Iniciar Sesión - Hospedajes SM</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    body {
-      font-family: Arial;
-      background: #f3f3f3;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .box {
-      width: 320px;
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #ccc;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-    }
-    button {
-      background: #0b6797;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="box">
-  <h2>Iniciar sesión</h2>
-
-  <form id="loginForm">
-    <input id="correo" type="email" placeholder="Correo" required>
-    <input id="password" type="password" placeholder="Contraseña" required>
-    <button type="submit">Ingresar</button>
-  </form>
-
-  <p style="margin-top:10px">
-    ¿No tienes cuenta? <a href="register.html">Regístrate</a>
-  </p>
-</div>
-
 <script>
-// URL del backend (cambia si usas otra)
+// URL del backend
 const API = "https://reservas-backend-sm.onrender.com";
 
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
@@ -70,6 +17,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const res = await fetch(API + "/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include", // <<<<<<<<<<<<<< OBLIGATORIO
       body: JSON.stringify({ correo, password })
     });
 
@@ -80,20 +28,13 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       return;
     }
 
-    // Guardamos token y usuario
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("usuario", JSON.stringify(data.usuario));
-
     alert("Bienvenido/a " + data.usuario.nombre);
 
-    // Redirección
     window.location.href = "booknow.html";
 
   } catch (err) {
+    console.error(err);
     alert("Error conectando con el servidor");
   }
 });
 </script>
-
-</body>
-</html>

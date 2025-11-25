@@ -53,7 +53,6 @@
 </div>
 
 <script>
-// URL del backend (ajústalo si lo cambias)
 const API = "https://reservas-backend-sm.onrender.com";
 
 document.getElementById("registerForm").addEventListener("submit", async (e) => {
@@ -69,9 +68,12 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
   }
 
   try {
-    const res = await fetch(API + "/api/auth/register", {
+    const res = await fetch(API + "/api/usuarios/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
       body: JSON.stringify({
         nombre,
         correo,
@@ -79,10 +81,9 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
       })
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
-      alert(data.error || "Error al registrar usuario");
+      const errorText = await res.text();
+      alert("Error al registrar: " + errorText);
       return;
     }
 
@@ -90,7 +91,8 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     window.location.href = "login.html";
 
   } catch (err) {
-    alert("Error conectando con el servidor");
+    console.error(err);
+    alert("Error conectando con el servidor.");
   }
 });
 </script>
