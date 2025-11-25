@@ -2,16 +2,34 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Panel Cliente</title>
+  <title>Mis Reservas - Panel Cliente</title>
+
   <style>
-    body { font-family: Arial; background:#f8f8f8; margin:0; padding:0; }
+    body { font-family: Arial; background:#f2f2f2; margin:0; padding:0; }
     header { background:#0b6797; color:white; padding:15px; }
-    nav a, nav button { color:white; margin-right:12px; text-decoration:none; font-weight:bold; }
-    nav button { background:transparent; border:none; cursor:pointer; }
-    table { width:100%; border-collapse:collapse; background:white; margin-top:20px; }
+    nav a, nav button {
+      color:white; margin-right:12px; text-decoration:none; font-weight:bold;
+    }
+    nav button {
+      background:transparent; border:none; cursor:pointer;
+    }
+    section { padding:20px; }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      background:white;
+      margin-top:20px;
+    }
     th, td { padding:10px; border:1px solid #ccc; }
     th { background:#e3e3e3; }
-    .cancelar-btn { background:#d9534f; color:white; border:none; padding:8px; cursor:pointer; border-radius:4px; }
+    .cancelar-btn {
+      background:#d9534f;
+      color:white;
+      border:none;
+      padding:8px;
+      cursor:pointer;
+      border-radius:4px;
+    }
   </style>
 </head>
 
@@ -19,8 +37,6 @@
 
 <header>
   <h2>Panel del Cliente</h2>
-
-  <div id="roleImage"></div>
 
   <nav>
     <a href="index.html">Inicio</a>
@@ -40,134 +56,135 @@
         <th>Check-in</th>
         <th>Check-out</th>
         <th>Propiedad</th>
-        <th>Estado</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
-      <tr><td colspan="6">Cargando reservas...</td></tr>
+      <tr><td colspan="5">Cargando reservas...</td></tr>
     </tbody>
   </table>
 </section>
 
-
 <script>
-// ==========================================
-//   CONFIG BACKEND
-// ==========================================
 const API = "https://reservas-backend-sm.onrender.com";
 
-// ==========================================
-//   VERIFICAR SESIÓN
-// ==========================================
-const email = localStorage.getItem("userEmail");
-const token = localStorage.getItem("token");
-let role = localStorage.getItem("userRole");
+// ======================================================
+//   VALIDAR SESIÓN (SOLO TOKEN)
+// ======================================================
+function verificarSesion() {
+  const token = localStorage.getItem("token");
+  const usuario = localStorage.getItem("usuario");
 
-if (!email || !token) {
-  alert("Debes iniciar sesión.");
-  window.location.href = "login.html";
+  if (!token || !usuario) {
+    alert("Debes iniciar sesión.");
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
 }
 
-if (role !== "cliente") {
-  alert("Acceso no permitido.");
-  window.location.href = "unauthorized.html";
-}
+verificarSesion();
 
-// ==========================================
-//   FORMATEAR FECHA
-// ==========================================
+// ======================================================
+//  FORMATEAR FECHA
+// ======================================================
 function formatearFecha(f) {
   return new Date(f).toLocaleDateString("es-CO");
 }
 
-// ==========================================
-//   CARGAR RESERVAS (CON TOKEN)
-// ==========================================
+// ======================================================
+//  CARGAR RESERVAS DEL USUARIO (USANDO /api/mis-reservas)
+// ======================================================
 async function cargarReservas() {
+  const token = localStorage.getItem("token");
   const tbody = document.querySelector("#reservasTable tbody");
-  tbody.innerHTML = "<tr><td colspan='6'>Cargando reservas...</td></tr>";
+
+  tbody.innerHTML = "<tr><td colspan='5'>Cargando reservas...</td></tr>";
 
   try {
-    const res = await fetch(`${API}/api/reservas/user/${email}`, {
+    const res = await fetch(`${API}/api/mis-reservas`, {
       headers: {
-        "Authorization": "Bearer " + token   // 🔥 TOKEN AÑADIDO
+        "Authorization": "Bearer " + token
       }
     });
 
     if (!res.ok) {
-      tbody.innerHTML = "<tr><td colspan='6'>No se pudieron cargar reservas.</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='5'>Error obteniendo reservas.</td></tr>";
       return;
     }
 
     const reservas = await res.json();
-    tbody.innerHTML = "";
 
     if (!reservas.length) {
-      tbody.innerHTML = "<tr><td colspan='6'>No tienes reservas registradas.</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='5'>No tienes reservas aún.</td></tr>";
       return;
     }
 
+    tbody.innerHTML = "";
+
     reservas.forEach(r => {
       const tr = document.createElement("tr");
+
       tr.innerHTML = `
         <td>${r.id}</td>
         <td>${formatearFecha(r.fecha_inicio)}</td>
         <td>${formatearFecha(r.fecha_fin)}</td>
         <td>${r.propiedad}</td>
-        <td>${r.estado}</td>
         <td>
           <button class="cancelar-btn" onclick="cancelarReserva(${r.id})">Cancelar</button>
         </td>
       `;
+
       tbody.appendChild(tr);
     });
 
   } catch (err) {
-    console.error(err);
-    tbody.innerHTML = "<tr><td colspan='6'>Error al conectar con el servidor.</td></tr>";
+    console.error("ERROR:", err);
+    tbody.innerHTML = "<tr><td colspan='5'>Error conectando al servidor.</td></tr>";
   }
 }
 
-// ==========================================
-//   CANCELAR RESERVA (CON TOKEN)
-// ==========================================
+// ======================================================
+//   CANCELAR RESERVA (DELETE /api/reservas/:id)
+// ======================================================
 async function cancelarReserva(id) {
-  if (!confirm(`¿Cancelar reserva #${id}?`)) return;
+  if (!confirm(`¿Cancelar la reserva #${id}?`)) return;
 
-  const res = await fetch(`${API}/api/reservas/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Authorization": "Bearer " + token  // 🔥 TOKEN AÑADIDO
+  const token = localStorage.getItem("token");
+
+  try {
+    const res = await fetch(`${API}/api/reservas/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    if (!res.ok) {
+      alert("Error al cancelar la reserva.");
+      return;
     }
-  });
 
-  if (res.ok) {
-    alert("Reserva cancelada.");
+    alert("Reserva cancelada correctamente.");
     cargarReservas();
-  } else {
-    alert("Error al cancelar.");
+
+  } catch (err) {
+    alert("Error en el servidor.");
+    console.error(err);
   }
 }
 
-// ==========================================
+// ======================================================
 //   LOGOUT
-// ==========================================
+// ======================================================
 function logout() {
   localStorage.clear();
   window.location.href = "index.html";
 }
 
-// ==========================================
-//   ICONO CLIENTE
-// ==========================================
-document.getElementById("roleImage").innerHTML = `
-  <svg width="100" height="40">
-    <rect width="100" height="40" fill="#0b6797" />
-    <text x="50" y="25" text-anchor="middle" fill="white" font-size="14">CLIENTE</text>
-  </svg>
-`;
-
+// ======================================================
+//   INICIO
+// ======================================================
 cargarReservas();
 </script>
 

@@ -49,6 +49,23 @@
 const API_URL = "https://reservas-backend-sm.onrender.com";
 
 // ============================================
+//   Verificar sesión (JWT)
+// ============================================
+function verificarSesion() {
+  const token = localStorage.getItem("token");
+  const usuario = localStorage.getItem("usuario");
+
+  if (!token || !usuario) {
+    alert("Debes iniciar sesión para reservar.");
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
+
+verificarSesion();
+
+// ============================================
 //   Cargar Propiedades
 // ============================================
 async function cargarPropiedades() {
@@ -87,10 +104,9 @@ document.getElementById("reservaForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const token = localStorage.getItem("token");
-  const userEmail = localStorage.getItem("userEmail");
 
-  if (!token || !userEmail) {
-    alert("Debes iniciar sesión para reservar.");
+  if (!token) {
+    alert("Debes iniciar sesión.");
     window.location.href = "login.html";
     return;
   }
@@ -98,6 +114,7 @@ document.getElementById("reservaForm").addEventListener("submit", async (e) => {
   const propiedad_id = document.getElementById("propiedad_id").value;
   const fecha_inicio = document.getElementById("arrival_date").value;
   const fecha_fin = document.getElementById("departure_date").value;
+  const message = document.getElementById("message").value;
 
   if (!propiedad_id) {
     alert("Selecciona una propiedad.");
@@ -108,14 +125,15 @@ document.getElementById("reservaForm").addEventListener("submit", async (e) => {
     const payload = {
       propiedad_id: Number(propiedad_id),
       fecha_inicio,
-      fecha_fin
+      fecha_fin,
+      notas: message
     };
 
     const res = await fetch(API_URL + "/api/reservas", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + token   // 👈 IMPORTANTE
+        "Authorization": "Bearer " + token
       },
       body: JSON.stringify(payload)
     });
@@ -140,7 +158,6 @@ document.getElementById("reservaForm").addEventListener("submit", async (e) => {
 //   INICIO
 // ============================================
 cargarPropiedades();
-
 </script>
 
 </body>

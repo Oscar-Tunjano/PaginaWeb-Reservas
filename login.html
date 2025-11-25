@@ -2,21 +2,21 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Iniciar sesión - Hospedajes SM</title>
+  <title>Iniciar Sesión - Hospedajes SM</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body {
       font-family: Arial;
       background: #f3f3f3;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
     }
     .box {
+      width: 320px;
       background: white;
       padding: 25px;
-      width: 320px;
       border-radius: 10px;
       box-shadow: 0 0 10px #ccc;
     }
@@ -41,49 +41,56 @@
   <h2>Iniciar sesión</h2>
 
   <form id="loginForm">
-    <input id="email" type="email" placeholder="Correo" required>
+    <input id="correo" type="email" placeholder="Correo" required>
     <input id="password" type="password" placeholder="Contraseña" required>
-    <button type="submit">Entrar</button>
+    <button type="submit">Ingresar</button>
   </form>
 
-  <p style="margin-top:10px">¿No tienes cuenta?
-    <a href="register.html">Registrarme</a>
+  <p style="margin-top:10px">
+    ¿No tienes cuenta? <a href="register.html">Regístrate</a>
   </p>
 </div>
 
 <script>
+// URL del backend (cambia si usas otra)
 const API = "https://reservas-backend-sm.onrender.com";
 
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const correo = document.getElementById("email").value.trim().toLowerCase();
+  const correo = document.getElementById("correo").value.trim().toLowerCase();
   const password = document.getElementById("password").value;
 
-  const res = await fetch(API + "/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ correo, password })
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    alert(data.error || "Error en login");
+  if (!correo || !password) {
+    alert("Completa todos los campos");
     return;
   }
 
-  // ✅ Guardar token, correo y rol correctamente
-  localStorage.setItem("token", data.token);
-  localStorage.setItem("userEmail", data.user.correo);
-  localStorage.setItem("userRole", data.user.role);
+  try {
+    const res = await fetch(API + "/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ correo, password })
+    });
 
-  // Redirección según rol
-  if (data.user.role === "admin") {
-    window.location.href = "dashboard-admin.html";
-  } else {
-    window.location.href = "dashboard-cliente.html";
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Credenciales incorrectas");
+      return;
+    }
+
+    // Guardamos token y usuario
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("usuario", JSON.stringify(data.usuario));
+
+    alert("Bienvenido/a " + data.usuario.nombre);
+
+    // Redirección
+    window.location.href = "booknow.html";
+
+  } catch (err) {
+    alert("Error conectando con el servidor");
   }
 });
 </script>
